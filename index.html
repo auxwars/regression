@@ -253,6 +253,110 @@ body::before {
   margin-top: 10px; padding: 10px 14px; background: var(--bg-inset); border-radius: 6px; border-left: 3px solid var(--border);
 }
 .info-hint code { background: var(--bg-hover); padding: 1px 5px; border-radius: 3px; }
+
+/* ── AP Score Estimator ── */
+.score-est-grid { display: grid; gap: 20px; }
+
+.slider-row { display: flex; flex-direction: column; gap: 8px; }
+.slider-header { display: flex; justify-content: space-between; align-items: baseline; }
+.slider-label { font-size: 14px; font-weight: 500; color: var(--text); }
+.slider-value {
+  font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; color: var(--accent);
+  min-width: 60px; text-align: right;
+}
+.slider-sub { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); }
+
+.score-slider {
+  -webkit-appearance: none; width: 100%; height: 7px; border-radius: 4px;
+  background: var(--bg-inset); border: 1px solid var(--border); outline: none; cursor: pointer;
+}
+.score-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--accent); cursor: pointer; border: 2px solid #fff;
+  box-shadow: 0 1px 5px rgba(180,74,45,0.35); transition: transform 0.12s;
+}
+.score-slider::-webkit-slider-thumb:hover { transform: scale(1.18); }
+.score-slider::-moz-range-thumb {
+  width: 20px; height: 20px; border-radius: 50%; background: var(--accent);
+  cursor: pointer; border: 2px solid #fff; box-shadow: 0 1px 5px rgba(180,74,45,0.35);
+}
+
+.score-output { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.score-box {
+  padding: 22px 18px 18px; background: var(--bg-inset); border: 1px solid var(--border);
+  border-radius: var(--radius); text-align: center;
+}
+.score-box-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; text-transform: uppercase;
+  letter-spacing: 2px; color: var(--text-muted); margin-bottom: 10px;
+}
+.score-box-num {
+  font-family: 'Cormorant Garamond', serif; font-size: 46px; font-weight: 700; line-height: 1;
+  transition: color 0.3s;
+}
+.score-box-sub { font-size: 11px; color: var(--text-muted); margin-top: 6px; min-height: 16px; }
+
+.ap-score-5 { color: #2d7a4f; }
+.ap-score-4 { color: #1a6fa8; }
+.ap-score-3 { color: #8a6d1e; }
+.ap-score-2 { color: #c2602a; }
+.ap-score-1 { color: #a83232; }
+
+.score-bar-wrap {
+  background: var(--bg-inset); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px;
+}
+.score-bar-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; text-transform: uppercase;
+  letter-spacing: 2px; color: var(--text-muted); margin-bottom: 12px;
+}
+.score-bar-outer { position: relative; }
+.score-bar-track {
+  display: flex; height: 22px; border-radius: 11px; overflow: hidden;
+  border: 1px solid var(--border-strong); position: relative;
+}
+.score-bar-seg {
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
+  color: rgba(255,255,255,0.92); letter-spacing: 0.5px; transition: filter 0.25s;
+}
+.score-bar-track:hover .score-bar-seg { filter: brightness(0.88); }
+
+.score-bar-marker {
+  position: absolute; top: -5px; width: 4px; height: 32px;
+  background: var(--ink); border-radius: 2px; transform: translateX(-50%);
+  transition: left 0.3s cubic-bezier(0.4,0,0.2,1);
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.7);
+  z-index: 2; pointer-events: none;
+}
+.score-bar-ticks {
+  display: flex; justify-content: space-between; margin-top: 7px; padding: 0 2px;
+}
+.score-bar-tick { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text-muted); }
+
+.score-cutoff-grid {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
+}
+.score-cutoff-card {
+  padding: 10px 8px; border-radius: 6px; text-align: center; border: 1px solid transparent;
+  transition: opacity 0.25s, transform 0.25s;
+}
+.score-cutoff-card .cut-score { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 700; line-height: 1; }
+.score-cutoff-card .cut-range { font-family: 'JetBrains Mono', monospace; font-size: 9px; margin-top: 4px; opacity: 0.8; }
+.score-cutoff-card .cut-pct   { font-family: 'JetBrains Mono', monospace; font-size: 9px; margin-top: 2px; opacity: 0.65; }
+
+.cut-5 { background: rgba(45,122,79,0.1); border-color: rgba(45,122,79,0.25); }
+.cut-5 .cut-score { color: #2d7a4f; }
+.cut-4 { background: rgba(26,111,168,0.1); border-color: rgba(26,111,168,0.25); }
+.cut-4 .cut-score { color: #1a6fa8; }
+.cut-3 { background: rgba(138,109,30,0.1); border-color: rgba(138,109,30,0.25); }
+.cut-3 .cut-score { color: #8a6d1e; }
+.cut-2 { background: rgba(194,96,42,0.1); border-color: rgba(194,96,42,0.25); }
+.cut-2 .cut-score { color: #c2602a; }
+.cut-1 { background: rgba(168,50,50,0.1); border-color: rgba(168,50,50,0.25); }
+.cut-1 .cut-score { color: #a83232; }
+
+.score-cutoff-card.dim { opacity: 0.35; transform: scale(0.96); }
+.score-cutoff-card.active { box-shadow: 0 0 0 2px currentColor; opacity: 1; transform: scale(1.04); }
 </style>
 </head>
 <body>
@@ -261,6 +365,98 @@ body::before {
     <h1>Dimensional Analysis Lab</h1>
     <div class="subtitle">Visual equation editor with SI dimensional verification</div>
   </header>
+
+  <div class="section">
+    <div class="section-label">AP Physics 1 &mdash; Score Estimator</div>
+    <div class="score-est-grid">
+
+      <div class="slider-row">
+        <div class="slider-header">
+          <span class="slider-label">MCQ Correct</span>
+          <span class="slider-value" id="mcqVal">20 / 40</span>
+        </div>
+        <input type="range" class="score-slider" id="mcqSlider" min="0" max="40" value="20" oninput="updateScoreEst()">
+        <div class="slider-sub">40 single-select questions &mdash; 1 raw point each &mdash; no penalty for wrong answers</div>
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-header">
+          <span class="slider-label">FRQ Credit</span>
+          <span class="slider-value" id="frqVal">50%</span>
+        </div>
+        <input type="range" class="score-slider" id="frqSlider" min="0" max="100" value="50" oninput="updateScoreEst()">
+        <div class="slider-sub">4 free-response questions &mdash; 40 raw points total (Q1: 10 &middot; Q2: 12 &middot; Q3: 10 &middot; Q4: 8)</div>
+      </div>
+
+      <div class="score-output">
+        <div class="score-box">
+          <div class="score-box-label">Composite Score</div>
+          <div class="score-box-num" id="compositeNum" style="color:var(--ink)">50.0</div>
+          <div class="score-box-sub">out of 100</div>
+        </div>
+        <div class="score-box">
+          <div class="score-box-label">Estimated AP Score</div>
+          <div class="score-box-num ap-score-3" id="apScoreNum">3</div>
+          <div class="score-box-sub" id="apScoreDesc">Qualified</div>
+        </div>
+      </div>
+
+      <div class="score-bar-wrap">
+        <div class="score-bar-label">Composite Score Bands</div>
+        <div class="score-bar-outer">
+          <div class="score-bar-track">
+            <div class="score-bar-seg" style="width:30%;background:#a83232">1</div>
+            <div class="score-bar-seg" style="width:15%;background:#c2602a">2</div>
+            <div class="score-bar-seg" style="width:15%;background:#8a6d1e">3</div>
+            <div class="score-bar-seg" style="width:15%;background:#1a6fa8">4</div>
+            <div class="score-bar-seg" style="width:25%;background:#2d7a4f">5</div>
+            <div class="score-bar-marker" id="scoreMarker"></div>
+          </div>
+          <div class="score-bar-ticks">
+            <span class="score-bar-tick">0</span>
+            <span class="score-bar-tick">30</span>
+            <span class="score-bar-tick">45</span>
+            <span class="score-bar-tick">60</span>
+            <span class="score-bar-tick">75</span>
+            <span class="score-bar-tick">100</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="score-cutoff-grid" id="cutoffGrid">
+        <div class="score-cutoff-card cut-5" id="cut5">
+          <div class="cut-score">5</div>
+          <div class="cut-range">75 &ndash; 100</div>
+          <div class="cut-pct">2025: 19.8%</div>
+        </div>
+        <div class="score-cutoff-card cut-4" id="cut4">
+          <div class="cut-score">4</div>
+          <div class="cut-range">60 &ndash; 74</div>
+          <div class="cut-pct">2025: 24.7%</div>
+        </div>
+        <div class="score-cutoff-card cut-3" id="cut3">
+          <div class="cut-score">3</div>
+          <div class="cut-range">45 &ndash; 59</div>
+          <div class="cut-pct">2025: 22.9%</div>
+        </div>
+        <div class="score-cutoff-card cut-2" id="cut2">
+          <div class="cut-score">2</div>
+          <div class="cut-range">30 &ndash; 44</div>
+          <div class="cut-pct">2024: 26.1%</div>
+        </div>
+        <div class="score-cutoff-card cut-1" id="cut1">
+          <div class="cut-score">1</div>
+          <div class="cut-range">0 &ndash; 29</div>
+          <div class="cut-pct">2024: 26.6%</div>
+        </div>
+      </div>
+
+      <div class="info-hint">
+        Scoring: composite = (MCQ / 40) &times; 50 + FRQ% &times; 0.5. Both sections weighted equally at 50 pts each. Score cutoffs are <strong>unofficial estimates</strong> based on historical data &mdash; actual cutoffs are set by College Board after each exam and are not published. 2025 mean: 3.12 &middot; pass rate: 67.3%.
+      </div>
+
+    </div>
+  </div>
 
   <div class="section">
     <div class="section-label">Equation Editor</div>
@@ -686,7 +882,72 @@ function runAnalysis(){
   }
 }
 
+// ── AP Score Estimator ──
+const AP_CUTOFFS = [
+  { score: 5, min: 75,  label: 'Extremely well qualified' },
+  { score: 4, min: 60,  label: 'Well qualified' },
+  { score: 3, min: 45,  label: 'Qualified' },
+  { score: 2, min: 30,  label: 'Possibly qualified' },
+  { score: 1, min: 0,   label: 'No recommendation' },
+];
+
+function calcComposite(mcq, frqPct) {
+  // MCQ: 40 raw pts → 50 scaled pts (×1.25)
+  // FRQ: 40 raw pts → 50 scaled pts; user provides % credit
+  return (mcq / 40) * 50 + (frqPct / 100) * 50;
+}
+
+function apScoreFor(composite) {
+  for (const band of AP_CUTOFFS) {
+    if (composite >= band.min) return band;
+  }
+  return AP_CUTOFFS[AP_CUTOFFS.length - 1];
+}
+
+function setSliderFill(id, pct) {
+  const el = document.getElementById(id);
+  el.style.background = `linear-gradient(to right, var(--accent) ${pct}%, var(--bg-inset) ${pct}%)`;
+}
+
+function updateScoreEst() {
+  const mcq    = parseInt(document.getElementById('mcqSlider').value);
+  const frqPct = parseInt(document.getElementById('frqSlider').value);
+
+  document.getElementById('mcqVal').textContent = mcq + ' / 40';
+  document.getElementById('frqVal').textContent = frqPct + '%';
+
+  setSliderFill('mcqSlider', (mcq / 40) * 100);
+  setSliderFill('frqSlider', frqPct);
+
+  const composite = calcComposite(mcq, frqPct);
+  const band = apScoreFor(composite);
+
+  document.getElementById('compositeNum').textContent = composite.toFixed(1);
+
+  const apEl = document.getElementById('apScoreNum');
+  apEl.textContent = band.score;
+  apEl.className   = 'score-box-num ap-score-' + band.score;
+  document.getElementById('apScoreDesc').textContent = band.label;
+
+  // Move marker (clamp to 0-100%)
+  const pct = Math.max(0, Math.min(100, composite));
+  document.getElementById('scoreMarker').style.left = pct + '%';
+
+  // Highlight active cutoff card, dim others
+  for (const b of AP_CUTOFFS) {
+    const card = document.getElementById('cut' + b.score);
+    if (b.score === band.score) {
+      card.classList.add('active');
+      card.classList.remove('dim');
+    } else {
+      card.classList.add('dim');
+      card.classList.remove('active');
+    }
+  }
+}
+
 // Boot
+updateScoreEst();
 initMathQuill();
 buildToolbar();
 buildEqGrid();
