@@ -3,12 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dimensional Analysis Lab</title>
+<title>regression calculator</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mathquill/0.10.1/mathquill.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathquill/0.10.1/mathquill.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -36,6 +33,9 @@
   --warn: #8a6d1e;
   --radius: 8px;
   --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  --blue: #2d5fa8;
+  --blue-bg: rgba(45, 95, 168, 0.06);
+  --blue-border: rgba(45, 95, 168, 0.2);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -81,31 +81,6 @@ body::before {
   margin-bottom: 18px;
 }
 
-/* MathQuill */
-.mq-editable-field {
-  border: 2px solid var(--border) !important;
-  border-radius: var(--radius) !important;
-  padding: 18px 22px !important;
-  min-height: 68px !important;
-  font-size: 22px !important;
-  background: var(--bg-surface) !important;
-  color: var(--ink) !important;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.04) !important;
-  transition: border-color 0.2s, box-shadow 0.2s !important;
-  display: flex !important;
-  align-items: center !important;
-}
-.mq-editable-field.mq-focused {
-  border-color: var(--accent) !important;
-  box-shadow: 0 0 0 3px var(--accent-light), inset 0 1px 3px rgba(0,0,0,0.04) !important;
-  outline: none !important;
-}
-.mq-editable-field .mq-cursor { border-color: var(--accent) !important; }
-.mq-editable-field var, .mq-editable-field .mq-text-mode {
-  font-family: 'Cormorant Garamond', serif !important;
-  font-style: italic !important;
-}
-
 /* Toolbar */
 .toolbar {
   display: flex;
@@ -127,7 +102,6 @@ body::before {
 .toolbar-group:last-child { border-right: none; margin-right: 0; padding-right: 0; }
 
 .tb-btn {
-  width: 38px;
   height: 36px;
   display: flex;
   align-items: center;
@@ -137,13 +111,17 @@ body::before {
   border-radius: 5px;
   cursor: pointer;
   color: var(--text-secondary);
-  font-size: 15px;
+  font-size: 13px;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 500;
   transition: all 0.1s;
   position: relative;
+  padding: 0 12px;
+  white-space: nowrap;
 }
 .tb-btn:hover { background: var(--bg-hover); border-color: var(--border); color: var(--ink); }
 .tb-btn:active { transform: scale(0.94); }
-.tb-btn .katex { font-size: 0.95em; pointer-events: none; }
+.tb-btn.active { background: var(--accent-light); border-color: var(--accent-border); color: var(--accent); }
 .tb-btn[data-tip]:hover::after {
   content: attr(data-tip);
   position: absolute;
@@ -161,35 +139,30 @@ body::before {
   pointer-events: none;
 }
 
-/* Greek dropdown */
-.greek-dropdown { position: relative; display: inline-block; }
-.greek-trigger { width: auto; padding: 0 10px; font-family: 'Cormorant Garamond', serif; font-size: 16px; font-style: italic; }
-.greek-panel {
-  display: none;
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
+/* Data input */
+.data-input-area {
+  width: 100%;
+  min-height: 160px;
+  border: 2px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
-  padding: 10px;
-  z-index: 200;
-  width: 280px;
+  padding: 18px 22px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--ink);
+  background: var(--bg-surface);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.04);
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
-.greek-panel.open { display: block; }
-.greek-panel-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 6px; margin-top: 8px; }
-.greek-panel-label:first-child { margin-top: 0; }
-.greek-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; }
-.greek-btn {
-  width: 32px; height: 32px;
-  display: flex; align-items: center; justify-content: center;
-  background: transparent; border: 1px solid transparent; border-radius: 4px;
-  cursor: pointer; font-family: 'Cormorant Garamond', serif; font-size: 16px; font-style: italic; color: var(--text); transition: all 0.1s;
+.data-input-area:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light), inset 0 1px 3px rgba(0,0,0,0.04);
 }
-.greek-btn:hover { background: var(--accent-light); border-color: var(--accent-border); color: var(--accent); }
+.data-input-area::placeholder { color: var(--text-muted); font-family: 'Outfit', sans-serif; font-size: 13px; }
 
-/* Equation cards */
+/* Equation cards (sample datasets) */
 .eq-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
 .eq-card {
   display: flex; flex-direction: column; gap: 6px;
@@ -197,30 +170,19 @@ body::before {
 }
 .eq-card:hover { border-color: var(--accent-border); background: var(--accent-light); transform: translateY(-1px); }
 .eq-card .eq-name { font-size: 11px; font-weight: 500; color: var(--text-muted); }
-.eq-card .eq-formula .katex { font-size: 0.95em; }
+.eq-card .eq-desc { font-size: 13px; color: var(--text-secondary); font-weight: 400; }
+.eq-card .eq-meta { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); }
 
-/* Variable assignment */
-.var-grid { display: grid; gap: 10px; }
-.var-row { display: grid; grid-template-columns: 70px 1fr; gap: 12px; align-items: center; animation: slideUp 0.2s ease; }
-@keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-.var-badge {
-  text-align: center; padding: 8px; background: var(--accent-light); border: 1px solid var(--accent-border); border-radius: 6px;
-  min-height: 38px; display: flex; align-items: center; justify-content: center;
+/* Model selector */
+.model-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+.model-card {
+  padding: 14px 16px; background: var(--bg-inset); border: 2px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: all 0.15s;
 }
-.var-badge .katex { font-size: 1.05em; }
-.var-select {
-  width: 100%; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 6px; color: var(--text);
-  font-family: 'Outfit', sans-serif; font-size: 13px; padding: 9px 32px 9px 12px; outline: none; appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239a9489' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 10px center; cursor: pointer;
-}
-.var-select:focus { border-color: var(--accent); }
-.var-custom-input {
-  width: 100%; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 6px; color: var(--text);
-  font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 8px 12px; outline: none; margin-top: 6px;
-}
-.var-custom-input::placeholder { color: var(--text-muted); }
-.var-custom-input:focus { border-color: var(--accent); }
+.model-card:hover { border-color: var(--accent-border); background: var(--accent-light); }
+.model-card.selected { border-color: var(--accent); background: var(--accent-light); }
+.model-card .model-name { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+.model-card .model-eq { margin-top: 6px; }
+.model-card .model-eq .katex { font-size: 0.9em; }
 
 /* Button */
 .analyze-btn {
@@ -229,467 +191,742 @@ body::before {
   cursor: pointer; background: var(--accent); color: #fff; margin-top: 12px; transition: all 0.15s;
 }
 .analyze-btn:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(180,74,45,0.2); }
+.analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: none; transform: none; box-shadow: none; }
 
 /* Results */
 .result-banner { display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-radius: var(--radius); margin-bottom: 16px; font-weight: 600; font-size: 15px; }
 .result-banner.pass { background: var(--success-bg); border: 1px solid var(--success-border); color: var(--success); }
 .result-banner.fail { background: var(--fail-bg); border: 1px solid var(--fail-border); color: var(--fail); }
 .result-banner.warn { background: var(--warn-bg); border: 1px solid var(--warn-border); color: var(--warn); }
+.result-banner.info { background: var(--blue-bg); border: 1px solid var(--blue-border); color: var(--blue); }
 .result-banner .icon { font-size: 20px; }
 
 .breakdown-box { background: var(--bg-inset); border-radius: var(--radius); padding: 18px 20px; margin-top: 12px; border: 1px solid var(--border); }
 .breakdown-box h4 { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 12px; }
+
 .dim-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
 .dim-label-tag { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); min-width: 40px; font-weight: 600; }
 .dim-value-tag { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--text); padding: 5px 14px; background: var(--bg-surface); border-radius: 6px; border: 1px solid var(--border); }
 
 .detail-table { width: 100%; margin-top: 14px; border-collapse: collapse; }
 .detail-table th { font-family: 'JetBrains Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border); }
-.detail-table td { font-size: 13px; padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.04); color: var(--text-secondary); }
-.detail-table td:first-child { color: var(--accent); }
+.detail-table td { font-size: 13px; padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.04); color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+.detail-table td:first-child { color: var(--accent); font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 500; }
 
 .info-hint {
   font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); line-height: 1.7;
   margin-top: 10px; padding: 10px 14px; background: var(--bg-inset); border-radius: 6px; border-left: 3px solid var(--border);
 }
 .info-hint code { background: var(--bg-hover); padding: 1px 5px; border-radius: 3px; }
+
+/* Chart */
+.chart-container {
+  position: relative;
+  width: 100%;
+  margin-top: 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.chart-container canvas { display: block; width: 100%; }
+
+/* Residual plot */
+.residual-strip {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.resid-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.resid-bar-inner {
+  width: 18px;
+  border-radius: 3px;
+  transition: height 0.3s ease;
+}
+.resid-bar-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  color: var(--text-muted);
+}
+
+/* Stat badge row */
+.stat-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.stat-badge {
+  flex: 1;
+  min-width: 120px;
+  padding: 12px 14px;
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-align: center;
+}
+.stat-badge .stat-val { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 700; color: var(--ink); }
+.stat-badge .stat-lbl { font-family: 'JetBrains Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin-top: 4px; }
+
+/* Prediction section */
+.predict-row {
+  display: flex; gap: 12px; align-items: center; margin-top: 14px;
+}
+.predict-input {
+  flex: 1;
+  background: var(--bg-surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--ink);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  padding: 12px 16px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.predict-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+.predict-input::placeholder { color: var(--text-muted); }
+.predict-btn {
+  padding: 12px 24px; border: none; border-radius: var(--radius);
+  font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600;
+  cursor: pointer; background: var(--ink); color: #fff; transition: all 0.15s; white-space: nowrap;
+}
+.predict-btn:hover { filter: brightness(1.3); }
+.predict-result {
+  margin-top: 10px;
+  padding: 12px 16px;
+  background: var(--accent-light);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent);
+  text-align: center;
+  display: none;
+}
+
+@keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.animate-in { animation: slideUp 0.3s ease; }
 </style>
 </head>
 <body>
 <div class="app">
   <header class="header">
-    <h1>Dimensional Analysis Lab</h1>
-    <div class="subtitle">Visual equation editor with SI dimensional verification</div>
+    <h1>regression calculator</h1>
+    <div class="subtitle">Fit curves to data with least-squares regression & visual diagnostics</div>
   </header>
 
+  <!-- Data Input -->
   <div class="section">
-    <div class="section-label">Equation Editor</div>
-    <div class="toolbar" id="toolbar"></div>
-    <div id="mathField" style="margin-bottom: 12px;"></div>
+    <div class="section-label">Data Input</div>
+    <div class="toolbar" id="toolbar">
+      <div class="toolbar-group">
+        <button class="tb-btn active" data-tip="Comma separated" onclick="setDelim(',', this)">CSV</button>
+        <button class="tb-btn" data-tip="Tab separated" onclick="setDelim('\t', this)">TSV</button>
+        <button class="tb-btn" data-tip="Space separated" onclick="setDelim(' ', this)">Space</button>
+      </div>
+      <div class="toolbar-group">
+        <button class="tb-btn" data-tip="Paste from clipboard" onclick="pasteClipboard()">&#x1f4cb; Paste</button>
+        <button class="tb-btn" data-tip="Clear all data" onclick="clearData()">&#x2715; Clear</button>
+      </div>
+    </div>
+    <textarea id="dataInput" class="data-input-area" placeholder="Enter x, y pairs — one per line&#10;&#10;Example:&#10;1, 2.1&#10;2, 3.9&#10;3, 6.2&#10;4, 7.8&#10;5, 10.1"></textarea>
     <div class="info-hint">
-      Click toolbar buttons or type naturally — <code>/</code> for fractions, <code>^</code> for exponents, <code>_</code> for subscripts. Greek letters auto-complete when you type their name.
+      Paste or type <code>x, y</code> pairs — one per line. Adjust the delimiter above if your data uses tabs or spaces.
     </div>
   </div>
 
+  <!-- Sample Datasets -->
   <div class="section">
-    <div class="section-label">Common Equations</div>
-    <div class="eq-grid" id="eqGrid"></div>
+    <div class="section-label">Sample Datasets</div>
+    <div class="eq-grid" id="sampleGrid"></div>
   </div>
 
-  <div class="section" id="varSection" style="display:none">
-    <div class="section-label">Assign Dimensions</div>
-    <div class="var-grid" id="varGrid"></div>
-    <button class="analyze-btn" onclick="runAnalysis()">Run Dimensional Analysis</button>
+  <!-- Model Selection -->
+  <div class="section">
+    <div class="section-label">Regression Model</div>
+    <div class="model-grid" id="modelGrid"></div>
   </div>
 
+  <!-- Run -->
+  <div class="section">
+    <button class="analyze-btn" onclick="runRegression()">Fit Regression</button>
+  </div>
+
+  <!-- Results -->
   <div class="section" id="resultSection" style="display:none">
     <div class="section-label">Result</div>
     <div id="resultContent"></div>
   </div>
+
+  <!-- Chart -->
+  <div class="section" id="chartSection" style="display:none">
+    <div class="section-label">Scatter &amp; Fit</div>
+    <div class="chart-container">
+      <canvas id="chart"></canvas>
+    </div>
+  </div>
+
+  <!-- Residuals -->
+  <div class="section" id="residSection" style="display:none">
+    <div class="section-label">Residuals</div>
+    <div class="chart-container">
+      <canvas id="residChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Predict -->
+  <div class="section" id="predictSection" style="display:none">
+    <div class="section-label">Predict</div>
+    <div class="predict-row">
+      <input type="number" id="predictInput" class="predict-input" placeholder="Enter x value" step="any">
+      <button class="predict-btn" onclick="predict()">Predict y</button>
+    </div>
+    <div id="predictResult" class="predict-result"></div>
+  </div>
 </div>
 
 <script>
-const MQ = MathQuill.getInterface(2);
-let mathField;
+// State
+let delim = ',';
+let selectedModel = 'linear';
+let lastFit = null;
 
-function initMathQuill() {
-  mathField = MQ.MathField(document.getElementById('mathField'), {
-    spaceBehavesLikeTab: false,
-    supSubsRequireOperand: false,
-    autoCommands: 'pi theta alpha beta gamma delta epsilon zeta eta lambda mu nu rho sigma tau phi psi omega Gamma Delta Omega Phi Psi Sigma nabla partial hbar ell sqrt vec hat dot ddot bar infty sum int prod',
-    autoOperatorNames: 'sin cos tan log ln exp lim',
-    handlers: { edit: function() { detectVariables(); } }
-  });
+// Delimiter
+function setDelim(d, btn) {
+  delim = d;
+  document.querySelectorAll('.toolbar-group:first-child .tb-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function pasteClipboard() {
+  navigator.clipboard.readText().then(t => { document.getElementById('dataInput').value = t; }).catch(() => {});
+}
+function clearData() {
+  document.getElementById('dataInput').value = '';
+  ['resultSection','chartSection','residSection','predictSection'].forEach(id => document.getElementById(id).style.display = 'none');
 }
 
-// Toolbar
-const toolbarDef = [
-  { group: 'struct', items: [
-    { tip:'Fraction', tex:'\\frac{a}{b}', act:()=>mathField.cmd('\\frac') },
-    { tip:'Square root', tex:'\\sqrt{x}', act:()=>mathField.cmd('\\sqrt') },
-    { tip:'Exponent', tex:'x^n', act:()=>mathField.cmd('^') },
-    { tip:'Subscript', tex:'x_i', act:()=>mathField.cmd('_') },
-    { tip:'Parentheses', tex:'(\\,)', act:()=>mathField.cmd('(') },
-  ]},
-  { group: 'ops', items: [
-    { tip:'Dot multiply', tex:'\\cdot', act:()=>mathField.write('\\cdot ') },
-    { tip:'Cross product', tex:'\\times', act:()=>mathField.write('\\times ') },
-    { tip:'Equals', tex:'=', act:()=>mathField.write('=') },
-    { tip:'Plus-minus', tex:'\\pm', act:()=>mathField.write('\\pm ') },
-  ]},
-  { group: 'calc', items: [
-    { tip:'Partial', tex:'\\partial', act:()=>mathField.write('\\partial ') },
-    { tip:'Nabla', tex:'\\nabla', act:()=>mathField.write('\\nabla ') },
-    { tip:'Integral', tex:'\\int', act:()=>mathField.cmd('\\int') },
-    { tip:'Sum', tex:'\\sum', act:()=>mathField.cmd('\\sum') },
-  ]},
-  { group: 'deco', items: [
-    { tip:'Vector', tex:'\\vec{v}', act:()=>mathField.cmd('\\vec') },
-    { tip:'Hat', tex:'\\hat{n}', act:()=>mathField.cmd('\\hat') },
-    { tip:'Time deriv', tex:'\\dot{x}', act:()=>mathField.cmd('\\dot') },
-    { tip:'Bar', tex:'\\bar{x}', act:()=>mathField.cmd('\\bar') },
-  ]},
-  { group: 'greek', isGreek: true },
+// Sample datasets
+const samples = [
+  { name: "Linear Growth", desc: "Sales over months", meta: "12 points · linear", data: "1,2.1\n2,4.0\n3,5.8\n4,8.1\n5,9.9\n6,12.0\n7,14.2\n8,15.9\n9,18.1\n10,20.0\n11,22.1\n12,23.9" },
+  { name: "Quadratic Motion", desc: "Free-fall distance (m)", meta: "8 points · quadratic", data: "0,0\n1,4.9\n2,19.6\n3,44.1\n4,78.5\n5,122.6\n6,176.6\n7,240.3" },
+  { name: "Exponential Decay", desc: "Radioactive counts", meta: "10 points · exponential", data: "0,1000\n1,607\n2,368\n3,223\n4,135\n5,82\n6,50\n7,30\n8,18\n9,11" },
+  { name: "Log Diminishing", desc: "Marginal utility", meta: "9 points · logarithmic", data: "1,0\n2,1.4\n3,2.2\n4,2.8\n5,3.2\n6,3.6\n7,3.9\n8,4.2\n9,4.4" },
+  { name: "Power Law", desc: "Metabolic rate vs mass", meta: "8 points · power", data: "1,3.5\n2,9.9\n5,33.1\n10,93.3\n20,263\n50,916\n100,2580\n200,7280" },
+  { name: "Noisy Linear", desc: "Exam score vs hours", meta: "15 points · scattered", data: "1,42\n2,48\n3,51\n3.5,54\n4,50\n5,62\n5.5,58\n6,65\n7,72\n7.5,68\n8,74\n9,80\n10,78\n10.5,85\n11,82" },
+  { name: "Sinusoidal", desc: "Temperature over hours", meta: "12 points · periodic", data: "0,20\n1,22.4\n2,23.7\n3,23.5\n4,21.8\n5,19.5\n6,17.3\n7,16.2\n8,16.5\n9,18.2\n10,20.5\n11,22.6" },
 ];
 
-const greekSets = {
-  lowercase: ['alpha','beta','gamma','delta','epsilon','zeta','eta','theta','lambda','mu','nu','pi','rho','sigma','tau','phi','psi','omega'],
-  uppercase: ['Gamma','Delta','Sigma','Phi','Psi','Omega'],
-  special: ['hbar','ell','infty','nabla','partial'],
-};
-
-function buildToolbar() {
-  const tb = document.getElementById('toolbar');
-  for (const g of toolbarDef) {
-    const gd = document.createElement('div');
-    gd.className = 'toolbar-group';
-    if (g.isGreek) {
-      const dd = document.createElement('div');
-      dd.className = 'greek-dropdown';
-      const trig = document.createElement('button');
-      trig.className = 'tb-btn greek-trigger';
-      trig.setAttribute('data-tip','Greek letters');
-      trig.textContent = '\u03B1\u03B2\u03B3';
-      trig.onclick = (e) => { e.stopPropagation(); dd.querySelector('.greek-panel').classList.toggle('open'); };
-      dd.appendChild(trig);
-
-      const panel = document.createElement('div');
-      panel.className = 'greek-panel';
-      for (const [label, letters] of [['Lowercase',greekSets.lowercase],['Uppercase',greekSets.uppercase],['Special',greekSets.special]]) {
-        const lbl = document.createElement('div'); lbl.className='greek-panel-label'; lbl.textContent=label; panel.appendChild(lbl);
-        const grid = document.createElement('div'); grid.className='greek-grid';
-        for (const gl of letters) {
-          const btn = document.createElement('button'); btn.className='greek-btn';
-          const sp = document.createElement('span');
-          try { katex.render('\\'+gl, sp, {throwOnError:false}); } catch { sp.textContent=gl; }
-          btn.appendChild(sp);
-          btn.onclick = (e) => { e.stopPropagation(); mathField.write('\\'+gl+' '); mathField.focus(); panel.classList.remove('open'); };
-          grid.appendChild(btn);
-        }
-        panel.appendChild(grid);
-      }
-      dd.appendChild(panel);
-      gd.appendChild(dd);
-    } else {
-      for (const item of g.items) {
-        const btn = document.createElement('button'); btn.className='tb-btn'; btn.setAttribute('data-tip', item.tip);
-        const sp = document.createElement('span');
-        try { katex.render(item.tex, sp, {throwOnError:false}); } catch { sp.textContent=item.tex; }
-        btn.appendChild(sp);
-        btn.onclick = () => { item.act(); mathField.focus(); };
-        gd.appendChild(btn);
-      }
-    }
-    tb.appendChild(gd);
-  }
-  document.addEventListener('click', () => { document.querySelectorAll('.greek-panel.open').forEach(p=>p.classList.remove('open')); });
-}
-
-// Known equations
-const knownEqs = [
-  { name:"Newton's 2nd Law", tex:"F=m\\cdot a", vars:{F:"force",m:"mass",a:"acceleration"} },
-  { name:"Kinetic Energy", tex:"E_k=\\frac{1}{2}mv^2", vars:{E_k:"energy",m:"mass",v:"velocity"} },
-  { name:"Gravitational PE", tex:"U=mgh", vars:{U:"energy",m:"mass",g:"acceleration",h:"length"} },
-  { name:"Coulomb's Law", tex:"F=k\\frac{q_1q_2}{r^2}", vars:{F:"force",k:"coulomb_const",q_1:"charge",q_2:"charge",r:"length"} },
-  { name:"Ideal Gas Law", tex:"PV=nRT", vars:{P:"pressure",V:"volume",n:"amount",R:"gas_const",T:"temperature"} },
-  { name:"E = mc\u00B2", tex:"E=mc^2", vars:{E:"energy",m:"mass",c:"velocity"} },
-  { name:"Wave Equation", tex:"v=f\\lambda", vars:{v:"velocity",f:"frequency","\\lambda":"length"} },
-  { name:"Ohm's Law", tex:"V=IR", vars:{V:"voltage",I:"current",R:"resistance"} },
-  { name:"Hooke's Law", tex:"F=-kx", vars:{F:"force",k:"spring_const",x:"length"} },
-  { name:"Pendulum Period", tex:"T=2\\pi\\sqrt{\\frac{l}{g}}", vars:{T:"time",l:"length",g:"acceleration"} },
-  { name:"Momentum", tex:"p=mv", vars:{p:"momentum",m:"mass",v:"velocity"} },
-  { name:"Schwarzschild Radius", tex:"r_s=\\frac{2GM}{c^2}", vars:{r_s:"length",G:"grav_const",M:"mass",c:"velocity"} },
-];
-
-let currentVarMap = {};
-
-function buildEqGrid() {
-  const grid = document.getElementById('eqGrid');
-  for (const eq of knownEqs) {
-    const card = document.createElement('div'); card.className='eq-card';
-    const nm = document.createElement('span'); nm.className='eq-name'; nm.textContent=eq.name;
-    const fm = document.createElement('span'); fm.className='eq-formula';
-    try { katex.render(eq.tex, fm, {throwOnError:false}); } catch { fm.textContent=eq.tex; }
-    card.appendChild(nm); card.appendChild(fm);
-    card.onclick = () => loadEq(eq);
+function buildSamples() {
+  const grid = document.getElementById('sampleGrid');
+  for (const s of samples) {
+    const card = document.createElement('div'); card.className = 'eq-card';
+    card.innerHTML = `<span class="eq-name">${s.name}</span><span class="eq-desc">${s.desc}</span><span class="eq-meta">${s.meta}</span>`;
+    card.onclick = () => { document.getElementById('dataInput').value = s.data; delim = ','; document.querySelectorAll('.toolbar-group:first-child .tb-btn').forEach(b=>b.classList.remove('active')); document.querySelector('.toolbar-group:first-child .tb-btn').classList.add('active'); };
     grid.appendChild(card);
   }
 }
 
-function loadEq(eq) {
-  mathField.latex(eq.tex);
-  currentVarMap = {...eq.vars};
-  detectVariables();
-  setTimeout(() => {
-    for (const v of detectedVars) {
-      const sel = document.getElementById('vs-'+sanitize(v));
-      if (sel && currentVarMap[v]) sel.value = currentVarMap[v];
+// Models
+const models = [
+  { id: 'linear', name: 'Linear', tex: 'y = ax + b' },
+  { id: 'quadratic', name: 'Quadratic', tex: 'y = ax^2 + bx + c' },
+  { id: 'cubic', name: 'Cubic', tex: 'y = ax^3 + bx^2 + cx + d' },
+  { id: 'exponential', name: 'Exponential', tex: 'y = a \\cdot e^{bx}' },
+  { id: 'logarithmic', name: 'Logarithmic', tex: 'y = a \\ln(x) + b' },
+  { id: 'power', name: 'Power', tex: 'y = a \\cdot x^b' },
+  { id: 'sinusoidal', name: 'Sinusoidal', tex: 'y = a \\sin(bx + c) + d' },
+];
+
+function buildModels() {
+  const grid = document.getElementById('modelGrid');
+  for (const m of models) {
+    const card = document.createElement('div');
+    card.className = 'model-card' + (m.id === selectedModel ? ' selected' : '');
+    card.id = 'mc-' + m.id;
+    const eq = document.createElement('div'); eq.className = 'model-eq';
+    try { katex.render(m.tex, eq, { throwOnError: false }); } catch { eq.textContent = m.tex; }
+    card.innerHTML = `<div class="model-name">${m.name}</div>`;
+    card.appendChild(eq);
+    card.onclick = () => {
+      selectedModel = m.id;
+      document.querySelectorAll('.model-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+    };
+    grid.appendChild(card);
+  }
+}
+
+// Parse data
+function parseData() {
+  const raw = document.getElementById('dataInput').value.trim();
+  if (!raw) return null;
+  const lines = raw.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#'));
+  const pts = [];
+  for (const line of lines) {
+    let parts;
+    if (delim === '\t') parts = line.split('\t');
+    else if (delim === ' ') parts = line.split(/\s+/);
+    else parts = line.split(',');
+    if (parts.length < 2) continue;
+    const x = parseFloat(parts[0]), y = parseFloat(parts[1]);
+    if (!isNaN(x) && !isNaN(y)) pts.push({ x, y });
+  }
+  return pts.length >= 2 ? pts : null;
+}
+
+// Least squares helpers
+function polyFit(pts, degree) {
+  const n = pts.length;
+  const size = degree + 1;
+  // Build normal equations
+  const M = Array.from({ length: size }, () => new Array(size + 1).fill(0));
+  for (let i = 0; i < size; i++) {
+    for (let j = 0; j < size; j++) {
+      let s = 0; for (const p of pts) s += Math.pow(p.x, i + j); M[i][j] = s;
     }
-  }, 80);
-}
-
-// Dimension database
-const dimDB = {
-  dimensionless:{M:0,L:0,T:0,I:0,Θ:0,N:0,J:0,label:"Dimensionless"},
-  mass:{M:1,L:0,T:0,I:0,Θ:0,N:0,J:0,label:"Mass — kg"},
-  length:{M:0,L:1,T:0,I:0,Θ:0,N:0,J:0,label:"Length — m"},
-  time:{M:0,L:0,T:1,I:0,Θ:0,N:0,J:0,label:"Time — s"},
-  current:{M:0,L:0,T:0,I:1,Θ:0,N:0,J:0,label:"Current — A"},
-  temperature:{M:0,L:0,T:0,I:0,Θ:1,N:0,J:0,label:"Temperature — K"},
-  amount:{M:0,L:0,T:0,I:0,Θ:0,N:1,J:0,label:"Amount — mol"},
-  luminous:{M:0,L:0,T:0,I:0,Θ:0,N:0,J:1,label:"Luminous int. — cd"},
-  velocity:{M:0,L:1,T:-1,I:0,Θ:0,N:0,J:0,label:"Velocity — m/s"},
-  acceleration:{M:0,L:1,T:-2,I:0,Θ:0,N:0,J:0,label:"Acceleration — m/s\u00B2"},
-  force:{M:1,L:1,T:-2,I:0,Θ:0,N:0,J:0,label:"Force — N"},
-  energy:{M:1,L:2,T:-2,I:0,Θ:0,N:0,J:0,label:"Energy — J"},
-  power:{M:1,L:2,T:-3,I:0,Θ:0,N:0,J:0,label:"Power — W"},
-  pressure:{M:1,L:-1,T:-2,I:0,Θ:0,N:0,J:0,label:"Pressure — Pa"},
-  frequency:{M:0,L:0,T:-1,I:0,Θ:0,N:0,J:0,label:"Frequency — Hz"},
-  charge:{M:0,L:0,T:1,I:1,Θ:0,N:0,J:0,label:"Charge — C"},
-  voltage:{M:1,L:2,T:-3,I:-1,Θ:0,N:0,J:0,label:"Voltage — V"},
-  resistance:{M:1,L:2,T:-3,I:-2,Θ:0,N:0,J:0,label:"Resistance — \u03A9"},
-  capacitance:{M:-1,L:-2,T:4,I:2,Θ:0,N:0,J:0,label:"Capacitance — F"},
-  magnetic_flux:{M:1,L:2,T:-2,I:-1,Θ:0,N:0,J:0,label:"Mag. flux — Wb"},
-  magnetic_field:{M:1,L:0,T:-2,I:-1,Θ:0,N:0,J:0,label:"Mag. field — T"},
-  momentum:{M:1,L:1,T:-1,I:0,Θ:0,N:0,J:0,label:"Momentum — kg\u00B7m/s"},
-  angular_momentum:{M:1,L:2,T:-1,I:0,Θ:0,N:0,J:0,label:"Ang. momentum"},
-  torque:{M:1,L:2,T:-2,I:0,Θ:0,N:0,J:0,label:"Torque — N\u00B7m"},
-  area:{M:0,L:2,T:0,I:0,Θ:0,N:0,J:0,label:"Area — m\u00B2"},
-  volume:{M:0,L:3,T:0,I:0,Θ:0,N:0,J:0,label:"Volume — m\u00B3"},
-  density:{M:1,L:-3,T:0,I:0,Θ:0,N:0,J:0,label:"Density — kg/m\u00B3"},
-  spring_const:{M:1,L:0,T:-2,I:0,Θ:0,N:0,J:0,label:"Spring const — N/m"},
-  grav_const:{M:-1,L:3,T:-2,I:0,Θ:0,N:0,J:0,label:"Grav. const — G"},
-  coulomb_const:{M:1,L:3,T:-4,I:-2,Θ:0,N:0,J:0,label:"Coulomb const — k"},
-  gas_const:{M:1,L:2,T:-2,I:0,Θ:-1,N:-1,J:0,label:"Gas const — R"},
-  permittivity:{M:-1,L:-3,T:4,I:2,Θ:0,N:0,J:0,label:"Permittivity — \u03B5\u2080"},
-  permeability:{M:1,L:1,T:-2,I:-2,Θ:0,N:0,J:0,label:"Permeability — \u03BC\u2080"},
-  custom:{label:"Custom\u2026"},
-};
-
-// Variable detection
-let detectedVars = [];
-function sanitize(v) { return v.replace(/[^a-zA-Z0-9]/g, '_'); }
-
-function detectVariables() {
-  const tex = mathField.latex();
-  if (!tex.includes('=')) { document.getElementById('varSection').style.display='none'; return; }
-
-  const vars = new Set();
-  let c = tex;
-  const cmds = ['frac','sqrt','left','right','cdot','times','div','vec','hat','dot','ddot','bar','partial','nabla','sin','cos','tan','log','ln','exp','lim','sum','int','prod','text','mathrm','mathbf','boldsymbol','nthroot','operatorname'];
-  for (const cmd of cmds) c = c.replace(new RegExp('\\\\'+cmd+'(?![a-zA-Z])','g'),' ');
-
-  const gRe = /\\(alpha|beta|gamma|delta|epsilon|zeta|eta|theta|lambda|mu|nu|pi|rho|sigma|tau|phi|psi|omega|Gamma|Delta|Omega|Phi|Psi|Sigma|hbar|ell)(?:_\{([^}]*)\}|_([a-zA-Z0-9]))?/g;
-  let m;
-  while ((m=gRe.exec(c))!==null) {
-    const sub=m[2]||m[3]||'';
-    vars.add('\\'+m[1]+(sub?(m[2]?'_{'+sub+'}':'_'+sub):''));
+    let s = 0; for (const p of pts) s += p.y * Math.pow(p.x, i); M[i][size] = s;
   }
-
-  let c2 = c.replace(/\\(alpha|beta|gamma|delta|epsilon|zeta|eta|theta|lambda|mu|nu|pi|rho|sigma|tau|phi|psi|omega|Gamma|Delta|Omega|Phi|Psi|Sigma|hbar|ell)(?:_\{[^}]*\}|_[a-zA-Z0-9])?/g,' ');
-  const lRe = /([a-zA-Z])(?:_\{([^}]*)\}|_([a-zA-Z0-9]))?/g;
-  while ((m=lRe.exec(c2))!==null) {
-    const sub=m[2]||m[3]||'';
-    vars.add(m[1]+(sub?(m[2]?'_{'+sub+'}':'_'+sub):''));
-  }
-  vars.delete('d');
-
-  detectedVars = [...vars].sort();
-  if (!detectedVars.length) { document.getElementById('varSection').style.display='none'; return; }
-  renderVarGrid();
-  document.getElementById('varSection').style.display='';
-  document.getElementById('resultSection').style.display='none';
-}
-
-function renderVarGrid() {
-  const grid = document.getElementById('varGrid');
-  grid.innerHTML = '';
-  const keys = Object.keys(dimDB);
-  for (const v of detectedVars) {
-    const row = document.createElement('div'); row.className='var-row';
-    const badge = document.createElement('div'); badge.className='var-badge';
-    try { katex.render(v, badge, {throwOnError:false}); } catch { badge.textContent=v; }
-    row.appendChild(badge);
-
-    const col = document.createElement('div');
-    const sel = document.createElement('select'); sel.className='var-select'; sel.id='vs-'+sanitize(v);
-    for (const dk of keys) { const o=document.createElement('option'); o.value=dk; o.textContent=dimDB[dk].label; sel.appendChild(o); }
-    if (currentVarMap[v]) sel.value = currentVarMap[v];
-    const ci = document.createElement('input'); ci.className='var-custom-input'; ci.id='ci-'+sanitize(v); ci.placeholder='M:1 L:2 T:-2'; ci.style.display='none';
-    sel.onchange = () => { ci.style.display = sel.value==='custom' ? '' : 'none'; };
-    col.appendChild(sel); col.appendChild(ci);
-    row.appendChild(col);
-    grid.appendChild(row);
-  }
-}
-
-// Dimensional analysis engine
-function dimMul(a,b){return{M:a.M+b.M,L:a.L+b.L,T:a.T+b.T,I:a.I+b.I,Θ:a.Θ+b.Θ,N:a.N+b.N,J:a.J+b.J};}
-function dimDiv(a,b){return{M:a.M-b.M,L:a.L-b.L,T:a.T-b.T,I:a.I-b.I,Θ:a.Θ-b.Θ,N:a.N-b.N,J:a.J-b.J};}
-function dimPow(a,n){return{M:a.M*n,L:a.L*n,T:a.T*n,I:a.I*n,Θ:a.Θ*n,N:a.N*n,J:a.J*n};}
-function dimZero(){return{M:0,L:0,T:0,I:0,Θ:0,N:0,J:0};}
-function dimEq(a,b){return a.M===b.M&&a.L===b.L&&a.T===b.T&&a.I===b.I&&a.Θ===b.Θ&&a.N===b.N&&a.J===b.J;}
-function dimToTex(d){
-  const b=[{k:'M',s:'M'},{k:'L',s:'L'},{k:'T',s:'T'},{k:'I',s:'I'},{k:'Θ',s:'\\Theta'},{k:'N',s:'N'},{k:'J',s:'J'}];
-  let p=[];for(const x of b){const v=d[x.k];if(v===0)continue;p.push(v===1?x.s:x.s+'^{'+v+'}');}
-  return p.length?p.join('\\cdot '):'1\\;(\\text{dimensionless})';
-}
-
-function getVarDim(vn){
-  const sel=document.getElementById('vs-'+sanitize(vn)); if(!sel)return null;
-  if(sel.value==='custom'){const inp=document.getElementById('ci-'+sanitize(vn));if(!inp)return null;return parseCDim(inp.value);}
-  const d=dimDB[sel.value]; if(!d||sel.value==='custom')return null;
-  return{M:d.M,L:d.L,T:d.T,I:d.I,Θ:d.Θ,N:d.N,J:d.J};
-}
-function parseCDim(s){const d=dimZero();for(const p of s.trim().split(/\s+/)){const[k,v]=p.split(':');if(k&&v!==undefined&&d.hasOwnProperty(k))d[k]=parseFloat(v)||0;}return d;}
-
-function tokenize(tex){
-  let s=tex.replace(/\\left|\\right/g,'').replace(/\\cdot|\\times/g,'*').replace(/\\div/g,'/').replace(/\\[,;:!]/g,'');
-  const t=[];let i=0;
-  while(i<s.length){
-    if(/\s/.test(s[i])){i++;continue;}
-    if(/[0-9.]/.test(s[i])){let n='';while(i<s.length&&/[0-9.]/.test(s[i])){n+=s[i];i++;}t.push({type:'num',value:parseFloat(n)});continue;}
-    if(s[i]==='\\'){i++;let c='';while(i<s.length&&/[a-zA-Z]/.test(s[i])){c+=s[i];i++;}
-      if(c==='frac'){t.push({type:'frac'});continue;}
-      if(c==='sqrt'){t.push({type:'sqrt'});continue;}
-      if(c==='nthroot'){t.push({type:'nthroot'});continue;}
-      if(['vec','hat','dot','ddot','bar','boldsymbol','mathbf','mathrm','operatorname'].includes(c)){t.push({type:'pass'});continue;}
-      if(c==='pi'){t.push({type:'num',value:Math.PI});continue;}
-      t.push({type:'var',value:'\\'+c});continue;
+  // Gauss elimination
+  for (let col = 0; col < size; col++) {
+    let maxR = col;
+    for (let r = col + 1; r < size; r++) if (Math.abs(M[r][col]) > Math.abs(M[maxR][col])) maxR = r;
+    [M[col], M[maxR]] = [M[maxR], M[col]];
+    if (Math.abs(M[col][col]) < 1e-15) continue;
+    for (let r = col + 1; r < size; r++) {
+      const f = M[r][col] / M[col][col];
+      for (let c = col; c <= size; c++) M[r][c] -= f * M[col][c];
     }
-    const ch=s[i];
-    if('{}()[]^_*/+-='.includes(ch)){t.push({type:ch});i++;continue;}
-    if(/[a-zA-Z]/.test(ch)){t.push({type:'var',value:ch});i++;continue;}
-    i++;
   }
-  return t;
+  const coeffs = new Array(size).fill(0);
+  for (let i = size - 1; i >= 0; i--) {
+    let s = M[i][size];
+    for (let j = i + 1; j < size; j++) s -= M[i][j] * coeffs[j];
+    coeffs[i] = s / M[i][i];
+  }
+  return coeffs; // [c0, c1, c2, ...] → y = c0 + c1*x + c2*x² + ...
 }
 
-class DimParser{
-  constructor(tok,gd){this.t=tok;this.p=0;this.gd=gd;this.vd={};}
-  pk(){return this.p<this.t.length?this.t[this.p]:null;}
-  adv(){return this.t[this.p++];}
-  exp(ty){const t=this.adv();if(!t||t.type!==ty)throw new Error('Expected '+ty);return t;}
-
-  parseExpr(){
-    let d=this.parseMul();
-    while(this.pk()&&(this.pk().type==='+'||this.pk().type==='-')){
-      this.adv();const r=this.parseMul();
-      if(!dimEq(d,r))throw new Error('Addition of incompatible dimensions: ['+dimToTex(d)+'] vs ['+dimToTex(r)+']');
+function fitModel(pts, model) {
+  switch (model) {
+    case 'linear': {
+      const c = polyFit(pts, 1);
+      return { coeffs: c, predict: x => c[0] + c[1] * x, label: 'linear' };
     }
-    return d;
-  }
-  parseMul(){
-    let d=this.parseUn();
-    while(this.pk()){
-      const t=this.pk();
-      if(t.type==='*'){this.adv();d=dimMul(d,this.parseUn());continue;}
-      if(t.type==='/'){this.adv();d=dimDiv(d,this.parseUn());continue;}
-      if(['var','num','(','frac','sqrt','nthroot','pass','{'].includes(t.type)){d=dimMul(d,this.parseUn());continue;}
-      break;
+    case 'quadratic': {
+      const c = polyFit(pts, 2);
+      return { coeffs: c, predict: x => c[0] + c[1] * x + c[2] * x * x, label: 'quadratic' };
     }
-    return d;
-  }
-  parseUn(){if(this.pk()&&this.pk().type==='-'){this.adv();return this.parsePow();}return this.parsePow();}
-  parsePow(){let b=this.parseAtom();if(this.pk()&&this.pk().type==='^'){this.adv();return dimPow(b,this.parseE());}return b;}
-  parseE(){
-    if(this.pk()&&this.pk().type==='{'){this.adv();const v=this.parseNE();this.exp('}');return v;}
-    if(this.pk()&&this.pk().type==='num')return this.adv().value;
-    if(this.pk()&&this.pk().type==='var'){this.adv();return 1;}
-    return 1;
-  }
-  parseNE(){
-    let v=this.parseNA();
-    while(this.pk()&&['+','-','*','/'].includes(this.pk().type)){
-      const op=this.adv().type;const r=this.parseNA();
-      if(op==='+')v+=r;else if(op==='-')v-=r;else if(op==='*')v*=r;else v/=r;
+    case 'cubic': {
+      const c = polyFit(pts, 3);
+      return { coeffs: c, predict: x => c[0] + c[1] * x + c[2] * x * x + c[3] * x * x * x, label: 'cubic' };
     }
-    return v;
-  }
-  parseNA(){
-    if(this.pk()&&this.pk().type==='num')return this.adv().value;
-    if(this.pk()&&this.pk().type==='-'){this.adv();return -this.parseNA();}
-    if(this.pk()&&this.pk().type==='('){this.adv();const v=this.parseNE();this.exp(')');return v;}
-    if(this.pk()&&this.pk().type==='var'){this.adv();return 1;}
-    return 1;
-  }
-  parseAtom(){
-    const t=this.pk();if(!t)return dimZero();
-    if(t.type==='num'){this.adv();return dimZero();}
-    if(t.type==='frac'){this.adv();this.exp('{');const n=this.parseExpr();this.exp('}');this.exp('{');const d=this.parseExpr();this.exp('}');return dimDiv(n,d);}
-    if(t.type==='sqrt'){this.adv();this.exp('{');const inner=this.parseExpr();this.exp('}');return dimPow(inner,0.5);}
-    if(t.type==='nthroot'){this.adv();this.exp('[');const n=this.parseNE();this.exp(']');this.exp('{');const inner=this.parseExpr();this.exp('}');return dimPow(inner,1/n);}
-    if(t.type==='pass'){this.adv();if(this.pk()&&this.pk().type==='{'){this.adv();const inner=this.parseExpr();this.exp('}');return inner;}return dimZero();}
-    if(t.type==='('){this.adv();const inner=this.parseExpr();if(this.pk()&&this.pk().type===')')this.adv();return inner;}
-    if(t.type==='{'){this.adv();const inner=this.parseExpr();this.exp('}');return inner;}
-    if(t.type==='var'){
-      this.adv();let vn=t.value;
-      if(this.pk()&&this.pk().type==='_'){
-        this.adv();
-        if(this.pk()&&this.pk().type==='{'){
-          this.adv();let sub='';
-          while(this.pk()&&this.pk().type!=='}'){const s=this.adv();sub+=(s.value!==undefined?s.value:s.type);}
-          if(this.pk())this.adv();
-          vn+='_{'+sub+'}';
-        } else if(this.pk()&&(this.pk().type==='var'||this.pk().type==='num')){
-          const s=this.adv();vn+='_'+(s.value!==undefined?s.value:s.type);
+    case 'exponential': {
+      // ln(y) = ln(a) + bx — filter y > 0
+      const valid = pts.filter(p => p.y > 0);
+      if (valid.length < 2) return null;
+      const logPts = valid.map(p => ({ x: p.x, y: Math.log(p.y) }));
+      const c = polyFit(logPts, 1);
+      const a = Math.exp(c[0]), b = c[1];
+      return { coeffs: [a, b], predict: x => a * Math.exp(b * x), label: 'exponential' };
+    }
+    case 'logarithmic': {
+      const valid = pts.filter(p => p.x > 0);
+      if (valid.length < 2) return null;
+      const logPts = valid.map(p => ({ x: Math.log(p.x), y: p.y }));
+      const c = polyFit(logPts, 1);
+      return { coeffs: [c[1], c[0]], predict: x => c[1] * Math.log(x) + c[0], label: 'logarithmic' };
+    }
+    case 'power': {
+      const valid = pts.filter(p => p.x > 0 && p.y > 0);
+      if (valid.length < 2) return null;
+      const logPts = valid.map(p => ({ x: Math.log(p.x), y: Math.log(p.y) }));
+      const c = polyFit(logPts, 1);
+      const a = Math.exp(c[0]), b = c[1];
+      return { coeffs: [a, b], predict: x => a * Math.pow(x, b), label: 'power' };
+    }
+    case 'sinusoidal': {
+      // y = a*sin(b*x + c) + d — grid search over b, then solve a,c,d
+      if (pts.length < 4) return null;
+      const n = pts.length;
+      const yMean = pts.reduce((s, p) => s + p.y, 0) / n;
+      const xs = pts.map(p => p.x);
+      const xRange = Math.max(...xs) - Math.min(...xs);
+      let bestSSR = Infinity, bestParams = null;
+      // Search frequencies: try many candidate b values
+      for (let fi = 1; fi <= 200; fi++) {
+        const b = (fi * Math.PI) / (xRange || 1);
+        // For fixed b, y = a*sin(bx+c) + d = a*cos(c)*sin(bx) + a*sin(c)*cos(bx) + d
+        // Let A = a*cos(c), B = a*sin(c), D = d → linear: y = A*sin(bx) + B*cos(bx) + D
+        const M = Array.from({ length: 3 }, () => new Array(4).fill(0));
+        // Normal equations for [A, B, D]
+        let ss = 0, sc = 0, s1 = 0, cc = 0, c1 = 0, sy = 0, cy = 0, y1 = 0;
+        for (const p of pts) {
+          const sv = Math.sin(b * p.x), cv = Math.cos(b * p.x);
+          ss += sv * sv; sc += sv * cv; s1 += sv;
+          cc += cv * cv; c1 += cv;
+          sy += sv * p.y; cy += cv * p.y; y1 += p.y;
         }
+        M[0][0] = ss; M[0][1] = sc; M[0][2] = s1; M[0][3] = sy;
+        M[1][0] = sc; M[1][1] = cc; M[1][2] = c1; M[1][3] = cy;
+        M[2][0] = s1; M[2][1] = c1; M[2][2] = n;  M[2][3] = y1;
+        // Solve 3x3
+        for (let col = 0; col < 3; col++) {
+          let maxR = col;
+          for (let r = col + 1; r < 3; r++) if (Math.abs(M[r][col]) > Math.abs(M[maxR][col])) maxR = r;
+          [M[col], M[maxR]] = [M[maxR], M[col]];
+          if (Math.abs(M[col][col]) < 1e-15) continue;
+          for (let r = col + 1; r < 3; r++) {
+            const f = M[r][col] / M[col][col];
+            for (let j = col; j < 4; j++) M[r][j] -= f * M[col][j];
+          }
+        }
+        const sol = [0, 0, 0];
+        for (let i = 2; i >= 0; i--) {
+          let s = M[i][3];
+          for (let j = i + 1; j < 3; j++) s -= M[i][j] * sol[j];
+          sol[i] = M[i][i] !== 0 ? s / M[i][i] : 0;
+        }
+        const A = sol[0], B = sol[1], D = sol[2];
+        const a = Math.sqrt(A * A + B * B);
+        const c = Math.atan2(B, A);
+        // Compute SSR
+        let ssr = 0;
+        for (const p of pts) { const r = p.y - (a * Math.sin(b * p.x + c) + D); ssr += r * r; }
+        if (ssr < bestSSR) { bestSSR = ssr; bestParams = [a, b, c, D]; }
       }
-      if(vn==='d')return dimZero();
-      const dim=this.gd(vn);
-      if(!dim)throw new Error('No dimensions for: '+vn);
-      this.vd[vn]=dim;return dim;
+      if (!bestParams) return null;
+      const [a, b, c, d] = bestParams;
+      return { coeffs: bestParams, predict: x => a * Math.sin(b * x + c) + d, label: 'sinusoidal' };
     }
-    this.adv();return dimZero();
   }
 }
 
-function runAnalysis(){
-  const tex=mathField.latex();
-  const rs=document.getElementById('resultSection');
-  const rc=document.getElementById('resultContent');
-  rs.style.display='';
-
-  if(!tex.includes('=')){rc.innerHTML='<div class="result-banner warn"><span class="icon">\u26A0</span> Equation must contain = sign</div>';return;}
-  const sides=tex.split('=');
-  if(sides.length!==2){rc.innerHTML='<div class="result-banner warn"><span class="icon">\u26A0</span> Use exactly one = sign</div>';return;}
-
-  try{
-    const lp=new DimParser(tokenize(sides[0]),getVarDim);
-    const rp=new DimParser(tokenize(sides[1]),getVarDim);
-    const ld=lp.parseExpr(),rd=rp.parseExpr();
-    const match=dimEq(ld,rd);
-    const allV={...lp.vd,...rp.vd};
-    const ents=Object.entries(allV);
-
-    let h='';
-    h+=match?'<div class="result-banner pass"><span class="icon">\u2713</span> Dimensionally Consistent</div>'
-             :'<div class="result-banner fail"><span class="icon">\u2717</span> Dimensionally Inconsistent</div>';
-    h+=`<div class="breakdown-box"><h4>Dimensions</h4>
-      <div class="dim-row"><span class="dim-label-tag">LHS</span><span class="dim-value-tag" id="lhsR"></span></div>
-      <div class="dim-row"><span class="dim-label-tag">RHS</span><span class="dim-value-tag" id="rhsR"></span></div></div>`;
-    if(ents.length){
-      h+=`<div class="breakdown-box" style="margin-top:12px"><h4>Variables</h4><table class="detail-table"><thead><tr><th>Var</th><th>Dimensions</th></tr></thead><tbody>`;
-      for(let i=0;i<ents.length;i++) h+=`<tr><td><span id="vn${i}"></span></td><td><span id="vd${i}"></span></td></tr>`;
-      h+=`</tbody></table></div>`;
-    }
-    rc.innerHTML=h;
-    katex.render('[\\,'+dimToTex(ld)+'\\,]',document.getElementById('lhsR'),{throwOnError:false});
-    katex.render('[\\,'+dimToTex(rd)+'\\,]',document.getElementById('rhsR'),{throwOnError:false});
-    for(let i=0;i<ents.length;i++){
-      katex.render(ents[i][0],document.getElementById('vn'+i),{throwOnError:false});
-      katex.render(dimToTex(ents[i][1]),document.getElementById('vd'+i),{throwOnError:false});
-    }
-  } catch(err){
-    rc.innerHTML=`<div class="result-banner fail"><span class="icon">\u2717</span> ${err.message}</div>
-      <div class="info-hint" style="margin-top:12px">Ensure all variables have dimensions assigned and the equation is well-formed.</div>`;
+function computeStats(pts, fit) {
+  const n = pts.length;
+  const yMean = pts.reduce((s, p) => s + p.y, 0) / n;
+  let ssTot = 0, ssRes = 0;
+  const residuals = [];
+  for (const p of pts) {
+    const yHat = fit.predict(p.x);
+    const r = p.y - yHat;
+    residuals.push({ x: p.x, r });
+    ssRes += r * r;
+    ssTot += (p.y - yMean) * (p.y - yMean);
   }
+  const r2 = ssTot === 0 ? 1 : 1 - ssRes / ssTot;
+  const rmse = Math.sqrt(ssRes / n);
+  const mae = residuals.reduce((s, r) => s + Math.abs(r.r), 0) / n;
+  return { r2, rmse, mae, residuals, ssRes, ssTot };
+}
+
+function formatCoeff(v) {
+  if (Math.abs(v) < 0.0001 && v !== 0) return v.toExponential(4);
+  return parseFloat(v.toPrecision(6)).toString();
+}
+
+function getEquationTex(model, coeffs) {
+  switch (model) {
+    case 'linear': return `y = ${formatCoeff(coeffs[1])}x ${coeffs[0] >= 0 ? '+' : '-'} ${formatCoeff(Math.abs(coeffs[0]))}`;
+    case 'quadratic': {
+      let s = `y = ${formatCoeff(coeffs[2])}x^2`;
+      s += ` ${coeffs[1] >= 0 ? '+' : '-'} ${formatCoeff(Math.abs(coeffs[1]))}x`;
+      s += ` ${coeffs[0] >= 0 ? '+' : '-'} ${formatCoeff(Math.abs(coeffs[0]))}`;
+      return s;
+    }
+    case 'cubic': {
+      let s = `y = ${formatCoeff(coeffs[3])}x^3`;
+      s += ` ${coeffs[2] >= 0 ? '+' : '-'} ${formatCoeff(Math.abs(coeffs[2]))}x^2`;
+      s += ` ${coeffs[1] >= 0 ? '+' : '-'} ${formatCoeff(Math.abs(coeffs[1]))}x`;
+      s += ` ${coeffs[0] >= 0 ? '+' : '-'} ${formatCoeff(Math.abs(coeffs[0]))}`;
+      return s;
+    }
+    case 'exponential': return `y = ${formatCoeff(coeffs[0])} \\cdot e^{${formatCoeff(coeffs[1])}x}`;
+    case 'logarithmic': return `y = ${formatCoeff(coeffs[0])} \\ln(x) ${coeffs[1] >= 0 ? '+' : '-'} ${formatCoeff(Math.abs(coeffs[1]))}`;
+    case 'power': return `y = ${formatCoeff(coeffs[0])} \\cdot x^{${formatCoeff(coeffs[1])}}`;
+    case 'sinusoidal': return `y = ${formatCoeff(coeffs[0])} \\sin(${formatCoeff(coeffs[1])}x ${coeffs[2] >= 0 ? '+' : '-'} ${formatCoeff(Math.abs(coeffs[2]))}) ${coeffs[3] >= 0 ? '+' : '-'} ${formatCoeff(Math.abs(coeffs[3]))}`;
+  }
+}
+
+// Chart drawing
+function drawChart(pts, fit) {
+  const section = document.getElementById('chartSection');
+  section.style.display = '';
+  const canvas = document.getElementById('chart');
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.clientWidth;
+  const H = Math.min(400, W * 0.55);
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const pad = { top: 24, right: 28, bottom: 44, left: 56 };
+  const cw = W - pad.left - pad.right;
+  const ch = H - pad.top - pad.bottom;
+
+  const xs = pts.map(p => p.x), ys = pts.map(p => p.y);
+  let xMin = Math.min(...xs), xMax = Math.max(...xs);
+  let yMin = Math.min(...ys), yMax = Math.max(...ys);
+  // Add some curve points to bounds
+  const steps = 200;
+  const dx = (xMax - xMin) || 1;
+  for (let i = 0; i <= steps; i++) {
+    const xv = xMin - dx * 0.05 + (dx * 1.1) * i / steps;
+    try { const yv = fit.predict(xv); if (isFinite(yv)) { yMin = Math.min(yMin, yv); yMax = Math.max(yMax, yv); } } catch {}
+  }
+  const xPad = (xMax - xMin) * 0.08 || 0.5;
+  const yPad = (yMax - yMin) * 0.08 || 0.5;
+  xMin -= xPad; xMax += xPad; yMin -= yPad; yMax += yPad;
+
+  const toX = v => pad.left + (v - xMin) / (xMax - xMin) * cw;
+  const toY = v => pad.top + ch - (v - yMin) / (yMax - yMin) * ch;
+
+  // Background
+  ctx.fillStyle = '#faf8f5';
+  ctx.fillRect(0, 0, W, H);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(180,160,140,0.15)';
+  ctx.lineWidth = 1;
+  const xTicks = niceAxis(xMin, xMax, 8);
+  const yTicks = niceAxis(yMin, yMax, 6);
+  for (const v of xTicks) { ctx.beginPath(); ctx.moveTo(toX(v), pad.top); ctx.lineTo(toX(v), pad.top + ch); ctx.stroke(); }
+  for (const v of yTicks) { ctx.beginPath(); ctx.moveTo(pad.left, toY(v)); ctx.lineTo(pad.left + cw, toY(v)); ctx.stroke(); }
+
+  // Axes
+  ctx.strokeStyle = '#c5bfb5';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(pad.left, pad.top + ch); ctx.lineTo(pad.left + cw, pad.top + ch); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(pad.left, pad.top); ctx.lineTo(pad.left, pad.top + ch); ctx.stroke();
+
+  // Tick labels
+  ctx.fillStyle = '#9a9489';
+  ctx.font = '10px "JetBrains Mono", monospace';
+  ctx.textAlign = 'center';
+  for (const v of xTicks) { ctx.fillText(formatAxis(v), toX(v), pad.top + ch + 18); }
+  ctx.textAlign = 'right';
+  for (const v of yTicks) { ctx.fillText(formatAxis(v), pad.left - 8, toY(v) + 3.5); }
+
+  // Curve
+  ctx.strokeStyle = '#b44a2d';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  let started = false;
+  for (let i = 0; i <= steps; i++) {
+    const xv = xMin + (xMax - xMin) * i / steps;
+    try {
+      const yv = fit.predict(xv);
+      if (!isFinite(yv)) { started = false; continue; }
+      const px = toX(xv), py = toY(yv);
+      if (py < pad.top - 20 || py > pad.top + ch + 20) { started = false; continue; }
+      if (!started) { ctx.moveTo(px, py); started = true; } else ctx.lineTo(px, py);
+    } catch { started = false; }
+  }
+  ctx.stroke();
+
+  // Points
+  for (const p of pts) {
+    ctx.beginPath();
+    ctx.arc(toX(p.x), toY(p.y), 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#2c2824';
+    ctx.fill();
+    ctx.strokeStyle = '#faf8f5';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  // Axis labels
+  ctx.fillStyle = '#5c574e';
+  ctx.font = '12px "Outfit", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('x', pad.left + cw / 2, H - 6);
+  ctx.save();
+  ctx.translate(14, pad.top + ch / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText('y', 0, 0);
+  ctx.restore();
+}
+
+function drawResiduals(residuals) {
+  const section = document.getElementById('residSection');
+  section.style.display = '';
+  const canvas = document.getElementById('residChart');
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.clientWidth;
+  const H = 200;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const pad = { top: 20, right: 28, bottom: 36, left: 56 };
+  const cw = W - pad.left - pad.right;
+  const ch = H - pad.top - pad.bottom;
+
+  const xs = residuals.map(r => r.x);
+  const rs = residuals.map(r => r.r);
+  let xMin = Math.min(...xs), xMax = Math.max(...xs);
+  let rMax = Math.max(...rs.map(Math.abs)) || 1;
+  const xPad = (xMax - xMin) * 0.08 || 0.5;
+  xMin -= xPad; xMax += xPad; rMax *= 1.15;
+
+  const toX = v => pad.left + (v - xMin) / (xMax - xMin) * cw;
+  const toY = v => pad.top + ch / 2 - (v / rMax) * (ch / 2);
+
+  ctx.fillStyle = '#faf8f5';
+  ctx.fillRect(0, 0, W, H);
+
+  // Zero line
+  ctx.strokeStyle = '#c5bfb5';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.moveTo(pad.left, toY(0)); ctx.lineTo(pad.left + cw, toY(0)); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(180,160,140,0.12)';
+  const xTicks = niceAxis(xMin, xMax, 8);
+  for (const v of xTicks) { ctx.beginPath(); ctx.moveTo(toX(v), pad.top); ctx.lineTo(toX(v), pad.top + ch); ctx.stroke(); }
+
+  // Tick labels
+  ctx.fillStyle = '#9a9489';
+  ctx.font = '10px "JetBrains Mono", monospace';
+  ctx.textAlign = 'center';
+  for (const v of xTicks) ctx.fillText(formatAxis(v), toX(v), pad.top + ch + 16);
+
+  // Stems and dots
+  for (const r of residuals) {
+    const px = toX(r.x), py = toY(r.r), py0 = toY(0);
+    ctx.strokeStyle = r.r >= 0 ? 'rgba(45,122,79,0.4)' : 'rgba(168,50,50,0.4)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(px, py0); ctx.lineTo(px, py); ctx.stroke();
+    ctx.beginPath(); ctx.arc(px, py, 4, 0, Math.PI * 2);
+    ctx.fillStyle = r.r >= 0 ? '#2d7a4f' : '#a83232';
+    ctx.fill();
+  }
+
+  ctx.fillStyle = '#5c574e';
+  ctx.font = '12px "Outfit", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('x', pad.left + cw / 2, H - 4);
+  ctx.save();
+  ctx.translate(14, pad.top + ch / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText('residual', 0, 0);
+  ctx.restore();
+}
+
+function niceAxis(lo, hi, maxTicks) {
+  const range = hi - lo || 1;
+  const rough = range / maxTicks;
+  const mag = Math.pow(10, Math.floor(Math.log10(rough)));
+  const res = rough / mag;
+  let step;
+  if (res <= 1.5) step = mag;
+  else if (res <= 3) step = 2 * mag;
+  else if (res <= 7) step = 5 * mag;
+  else step = 10 * mag;
+  const start = Math.ceil(lo / step) * step;
+  const ticks = [];
+  for (let v = start; v <= hi + step * 0.01; v += step) ticks.push(v);
+  return ticks;
+}
+
+function formatAxis(v) {
+  if (Math.abs(v) >= 10000 || (Math.abs(v) < 0.01 && v !== 0)) return v.toExponential(1);
+  return parseFloat(v.toPrecision(4)).toString();
+}
+
+// Main
+function runRegression() {
+  const pts = parseData();
+  const rc = document.getElementById('resultContent');
+  const rs = document.getElementById('resultSection');
+  rs.style.display = '';
+
+  if (!pts) {
+    rc.innerHTML = '<div class="result-banner warn"><span class="icon">&#x26A0;</span> Need at least 2 valid data points</div>';
+    ['chartSection','residSection','predictSection'].forEach(id => document.getElementById(id).style.display = 'none');
+    return;
+  }
+
+  const fit = fitModel(pts, selectedModel);
+  if (!fit) {
+    rc.innerHTML = '<div class="result-banner fail"><span class="icon">&#x2717;</span> Model requires positive values (check data)</div>';
+    ['chartSection','residSection','predictSection'].forEach(id => document.getElementById(id).style.display = 'none');
+    return;
+  }
+
+  lastFit = fit;
+  const stats = computeStats(pts, fit);
+  const eqTex = getEquationTex(selectedModel, fit.coeffs);
+
+  const r2Class = stats.r2 >= 0.95 ? 'pass' : stats.r2 >= 0.8 ? 'info' : stats.r2 >= 0.5 ? 'warn' : 'fail';
+  const r2Icon = stats.r2 >= 0.8 ? '&#x2713;' : stats.r2 >= 0.5 ? '&#x26A0;' : '&#x2717;';
+  const r2Desc = stats.r2 >= 0.95 ? 'Excellent Fit' : stats.r2 >= 0.8 ? 'Good Fit' : stats.r2 >= 0.5 ? 'Moderate Fit' : 'Poor Fit';
+
+  let h = `<div class="result-banner ${r2Class}"><span class="icon">${r2Icon}</span> ${r2Desc}</div>`;
+
+  h += `<div class="breakdown-box"><h4>Fitted Equation</h4><div style="text-align:center;padding:8px 0"><span id="eqRender"></span></div></div>`;
+
+  h += `<div class="stat-row">
+    <div class="stat-badge"><div class="stat-val">${stats.r2.toFixed(4)}</div><div class="stat-lbl">R²</div></div>
+    <div class="stat-badge"><div class="stat-val">${stats.rmse.toPrecision(4)}</div><div class="stat-lbl">RMSE</div></div>
+    <div class="stat-badge"><div class="stat-val">${stats.mae.toPrecision(4)}</div><div class="stat-lbl">MAE</div></div>
+    <div class="stat-badge"><div class="stat-val">${pts.length}</div><div class="stat-lbl">Points</div></div>
+  </div>`;
+
+  // Coefficients table
+  h += `<div class="breakdown-box" style="margin-top:12px"><h4>Coefficients</h4><table class="detail-table"><thead><tr><th>Parameter</th><th>Value</th></tr></thead><tbody>`;
+  const paramNames = { linear: ['b (intercept)', 'a (slope)'], quadratic: ['c (intercept)', 'b', 'a'], cubic: ['d (intercept)', 'c', 'b', 'a'], exponential: ['a (amplitude)', 'b (rate)'], logarithmic: ['a (scale)', 'b (offset)'], power: ['a (coefficient)', 'b (exponent)'], sinusoidal: ['a (amplitude)', 'b (frequency)', 'c (phase)', 'd (offset)'] };
+  const names = paramNames[selectedModel] || [];
+  for (let i = 0; i < fit.coeffs.length; i++) {
+    h += `<tr><td>${names[i] || 'c' + i}</td><td>${formatCoeff(fit.coeffs[i])}</td></tr>`;
+  }
+  h += `</tbody></table></div>`;
+
+  // Data table
+  h += `<div class="breakdown-box" style="margin-top:12px"><h4>Data &amp; Fitted Values</h4><table class="detail-table"><thead><tr><th>x</th><th>y (observed)</th><th>ŷ (fitted)</th><th>Residual</th></tr></thead><tbody>`;
+  for (let i = 0; i < pts.length; i++) {
+    const yHat = fit.predict(pts[i].x);
+    const r = pts[i].y - yHat;
+    h += `<tr><td>${formatCoeff(pts[i].x)}</td><td>${formatCoeff(pts[i].y)}</td><td>${formatCoeff(yHat)}</td><td style="color:${r >= 0 ? 'var(--success)' : 'var(--fail)'}">${r >= 0 ? '+' : ''}${formatCoeff(r)}</td></tr>`;
+  }
+  h += `</tbody></table></div>`;
+
+  rc.innerHTML = h;
+  rs.classList.add('animate-in');
+
+  try { katex.render(eqTex, document.getElementById('eqRender'), { throwOnError: false, displayMode: true }); } catch {}
+
+  drawChart(pts, fit);
+  drawResiduals(stats.residuals);
+
+  document.getElementById('predictSection').style.display = '';
+  document.getElementById('predictResult').style.display = 'none';
+}
+
+function predict() {
+  if (!lastFit) return;
+  const x = parseFloat(document.getElementById('predictInput').value);
+  if (isNaN(x)) return;
+  try {
+    const y = lastFit.predict(x);
+    const el = document.getElementById('predictResult');
+    el.style.display = '';
+    el.innerHTML = `ŷ = ${formatCoeff(y)}`;
+  } catch {}
 }
 
 // Boot
-initMathQuill();
-buildToolbar();
-buildEqGrid();
+buildSamples();
+buildModels();
 </script>
 </body>
 </html>
